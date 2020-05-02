@@ -11,14 +11,34 @@ public class AudioPeer : MonoBehaviour
     //Split up the 512 channels into 8 different regions for optimized Visualization
     public static float[] FrequencyBands = new float[8];
 
+    //Buffer floats handle smooth transistions of the y-scale 
+    public static float[] BandBuffers = new float[8];
+
     [SerializeField] private AudioSource _audioSource = null;
+    private float[] _buffersDecrease = null;
 
     private const float FREQUENCY_SCALING_FACTOR = 10f;
+    private const float BAND_BUFFER_DECREASE = 0.00005f;
+    private const float BAND_BUFFER_INCREASE_SCALE = 1.2f;
+
+
+    private void Awake()
+    {
+        if (FrequencyBands.Length != BandBuffers.Length)
+        {
+            Debug.LogError("BandBuffer Array is not the same length as the Frequency Band Array");
+        }
+        else
+        {
+            _buffersDecrease = new float[FrequencyBands.Length];
+        }
+    }
 
     private void Update()
     {
         GetSpectrumAudioSource();
         MakeFrequencyBends();
+        BandBuffering();
     }
 
     /// <summary>
@@ -28,6 +48,23 @@ public class AudioPeer : MonoBehaviour
     private void GetSpectrumAudioSource()
     {
         _audioSource.GetSpectrumData(Samples, 0, FFTWindow.Blackman);
+    }
+
+    private void BandBuffering()
+    {
+        for (int i = 0; i < FrequencyBands.Length; i++)
+        {
+            if (FrequencyBands[i] > BandBuffers[i])
+            {
+                BandBuffers[i] = FrequencyBands[i];
+                _buffersDecrease[i] = BAND_BUFFER_DECREASE;
+            }
+            if (FrequencyBands[i] < BandBuffers[i])
+            {
+                BandBuffers[i] -= _buffersDecrease[i];
+                _buffersDecrease[i] *= BAND_BUFFER_INCREASE_SCALE;
+            }
+        }
     }
 
     /// <summary>
@@ -59,7 +96,6 @@ public class AudioPeer : MonoBehaviour
             averageCount /= count;
 
             FrequencyBands[i] = averageCount * FREQUENCY_SCALING_FACTOR;
-;
         }
     }
 }

@@ -2,9 +2,9 @@
 
 public class ParamCube : MonoBehaviour
 {
-    [SerializeField] private int _band;
-    [SerializeField] private float _startScale;
-    [SerializeField] private float _scaleMultiplier;
+    [SerializeField] private int _band = 0;
+    [SerializeField] private float _startScale = 0;
+    [SerializeField] private float _scaleMultiplier = 0;
 
 
     private void Update()
