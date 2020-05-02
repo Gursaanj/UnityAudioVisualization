@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\AudioPeer.cs" />
+    <Compile Include="Assets\Scripts\CubeVisualizer.cs" />
     <Compile Include="Assets\Scripts\InstantiateCubes.cs" />
     <Compile Include="Assets\Scripts\ParamCube.cs" />
     <Reference Include="Unity.Timeline.Editor">
