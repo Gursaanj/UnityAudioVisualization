@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\AudioPeer.cs" />
+    <Compile Include="Assets\Scripts\InstantiateCubes.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/Gursaanj/Documents/GitHub/UnityAudioVisualization/Audio Visualization Tool/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
