@@ -9,6 +9,6 @@ public class ParamCube : MonoBehaviour
 
     private void Update()
     {
-        transform.localScale = new Vector3(transform.localScale.x, (AudioPeer.FrequencyBands[_band] * _scaleMultiplier) + _startScale, transform.localScale.z);
+        transform.localScale = new Vector3(transform.localScale.x, (AudioPeer.AudioBandBuffers[_band] * _scaleMultiplier) + _startScale, transform.localScale.z);
     }
 }

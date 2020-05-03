@@ -8,14 +8,19 @@ public class AudioPeer : MonoBehaviour
     // and _samples[512] will be highest pitch at 20 khz max
     public static float[] Samples = new float[512];
 
-    //Split up the 512 channels into 8 different regions for optimized Visualization
-    public static float[] FrequencyBands = new float[8];
+    //Decides how many bands should the 512 samples be broken up into
+    public static int NUMBER_OF_BANDS = 8; 
 
+    //Split up the 512 channels into different regions for optimized Visualization
+    public static float[] AudioBands = null;
     //Buffer floats handle smooth transistions of the y-scale 
-    public static float[] BandBuffers = new float[8];
+    public static float[] AudioBandBuffers = null;
 
     [SerializeField] private AudioSource _audioSource = null;
     private float[] _buffersDecrease = null;
+    private float[] _frequencyBands = null;
+    private float[] _bandBuffers = null;
+    private float[] _frequencyBandMaxValues = null;
 
     private const float FREQUENCY_SCALING_FACTOR = 10f;
     private const float BAND_BUFFER_DECREASE = 0.00005f;
@@ -24,14 +29,12 @@ public class AudioPeer : MonoBehaviour
 
     private void Awake()
     {
-        if (FrequencyBands.Length != BandBuffers.Length)
-        {
-            Debug.LogError("BandBuffer Array is not the same length as the Frequency Band Array");
-        }
-        else
-        {
-            _buffersDecrease = new float[FrequencyBands.Length];
-        }
+        AudioBands = new float[NUMBER_OF_BANDS];
+        AudioBandBuffers = new float[NUMBER_OF_BANDS];
+        _frequencyBands = new float[NUMBER_OF_BANDS];
+        _bandBuffers = new float[NUMBER_OF_BANDS];
+        _buffersDecrease = new float[NUMBER_OF_BANDS];
+        _frequencyBandMaxValues = new float[NUMBER_OF_BANDS];
     }
 
     private void Update()
@@ -39,6 +42,7 @@ public class AudioPeer : MonoBehaviour
         GetSpectrumAudioSource();
         MakeFrequencyBends();
         BandBuffering();
+        CreateAudioBands();
     }
 
     /// <summary>
@@ -52,16 +56,16 @@ public class AudioPeer : MonoBehaviour
 
     private void BandBuffering()
     {
-        for (int i = 0; i < FrequencyBands.Length; i++)
+        for (int i = 0; i < NUMBER_OF_BANDS; i++)
         {
-            if (FrequencyBands[i] > BandBuffers[i])
+            if (_frequencyBands[i] > _bandBuffers[i])
             {
-                BandBuffers[i] = FrequencyBands[i];
+                _bandBuffers[i] = _frequencyBands[i];
                 _buffersDecrease[i] = BAND_BUFFER_DECREASE;
             }
-            if (FrequencyBands[i] < BandBuffers[i])
+            if (_frequencyBands[i] < _bandBuffers[i])
             {
-                BandBuffers[i] -= _buffersDecrease[i];
+                _bandBuffers[i] -= _buffersDecrease[i];
                 _buffersDecrease[i] *= BAND_BUFFER_INCREASE_SCALE;
             }
         }
@@ -76,13 +80,13 @@ public class AudioPeer : MonoBehaviour
         int count = 0;
         int currentSampleCountTraversed = 0;
 
-        for (int i = 0; i < FrequencyBands.Length; i++)
+        for (int i = 0; i < NUMBER_OF_BANDS; i++)
         {
             float averageCount = 0;
             int sampleCount = (int)Mathf.Pow(2, i) * 2;
             currentSampleCountTraversed += sampleCount;
 
-            if (i == FrequencyBands.Length - 1 && Samples.Length > currentSampleCountTraversed)
+            if (i == _frequencyBands.Length - 1 && Samples.Length > currentSampleCountTraversed)
             {
                 sampleCount += Samples.Length - currentSampleCountTraversed;
             }
@@ -95,7 +99,21 @@ public class AudioPeer : MonoBehaviour
 
             averageCount /= count;
 
-            FrequencyBands[i] = averageCount * FREQUENCY_SCALING_FACTOR;
+            _frequencyBands[i] = averageCount * FREQUENCY_SCALING_FACTOR;
+        }
+    }
+
+    private void CreateAudioBands()
+    {
+        for (int i = 0; i < NUMBER_OF_BANDS; i++)
+        {
+            if (_frequencyBands[i] > _frequencyBandMaxValues[i])
+            {
+                _frequencyBandMaxValues[i] = _frequencyBands[i];
+            }
+
+            AudioBands[i] = (_frequencyBands[i] / _frequencyBandMaxValues[i]);
+            AudioBandBuffers[i] = (_bandBuffers[i] / _frequencyBandMaxValues[i]);
         }
     }
 }
